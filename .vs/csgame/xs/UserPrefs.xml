@@ -1,4 +1,32 @@
-﻿<Properties StartupConfiguration="{5F7EB149-9595-4634-94F8-680054E5906D}|Default">
-  <MonoDevelop.Ide.ItemProperties.csgame FirstBuild="True" />
+﻿<Properties StartupConfiguration="{5F7EB149-9595-4634-94F8-680054E5906D}|Default" GitUserInfo="UsingMD">
+  <MonoDevelop.Ide.Workbench ActiveDocument="csgame/Program.cs">
+    <Files>
+      <File FileName="csgame/Program.cs" Line="17" Column="2" />
+      <File FileName="csgame/WeatherForecast.cs" Line="1" Column="1" />
+      <File FileName="csgame/Properties/launchSettings.json" Line="1" Column="1" />
+      <File FileName="csgame/Controllers/WeatherForecastController.cs" Line="15" Column="1" />
+      <File FileName="csgame/appsettings.json" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="csgame" expanded="True">
+            <Node name="csgame" expanded="True">
+              <Node name="Dependencies" selected="True" />
+              <Node name="Controllers" expanded="True" />
+              <Node name="Properties" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.csgame PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MultiItemStartupConfigurations />
 </Properties>
