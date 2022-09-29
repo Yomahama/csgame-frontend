@@ -1,28 +1,43 @@
-import 'package:csgame/models/position.dart';
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class Player {
-  final Position position;
+  final String username;
+  final double x;
+  final double y;
 
-  const Player(this.position);
+  const Player(this.username, this.x, this.y);
 
-  factory Player.start() => Player(Position.start());
+  factory Player.start(String username) => Player(username, 0, 0);
 
-  void goUp() => position.goUp();
-  void goDown() => position.goDown();
+  Map<String, dynamic> toMap() {
+    return {
+      'username': username,
+      'x': x,
+      'y': y,
+    };
+  }
 
-  Widget figure(Position position) {
-    return Positioned(
-      top: position.y,
-      left: position.x,
-      child: Container(
-        height: 20,
-        width: 20,
-        decoration: const BoxDecoration(
-          color: Colors.black,
-          shape: BoxShape.circle,
-        ),
-      ),
+  factory Player.fromMap(Map<String, dynamic> map) {
+    return Player(
+      map['username'] ?? '',
+      map['x']?.toDouble() ?? 0.0,
+      map['y']?.toDouble() ?? 0.0,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory Player.fromJson(String source) => Player.fromMap(json.decode(source));
+
+  Player copyWith({
+    String? username,
+    double? x,
+    double? y,
+  }) {
+    return Player(
+      username ?? this.username,
+      x ?? this.x,
+      y ?? this.y,
     );
   }
 }
