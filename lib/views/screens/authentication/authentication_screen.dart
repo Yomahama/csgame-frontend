@@ -1,4 +1,5 @@
-import 'package:csgame/views/blocs/cubit/authentication_cubit.dart';
+import 'package:csgame/helpers/input_formatter.dart';
+import 'package:csgame/views/screens/authentication/cubit/authentication_cubit.dart';
 import 'package:csgame/views/screens/start_playing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,6 +40,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               style: TextStyle(
                 fontSize: 30,
                 color: Colors.blue,
+                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 100),
@@ -46,10 +48,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               width: 400,
               child: TextField(
                 controller: _usernameController,
-                textCapitalization: TextCapitalization.sentences,
                 maxLength: 30,
                 textAlign: TextAlign.center,
                 decoration: const InputDecoration(labelText: 'Username'),
+                inputFormatters: [UpperCaseTextFormatter()],
               ),
             ),
             const SizedBox(height: 80),

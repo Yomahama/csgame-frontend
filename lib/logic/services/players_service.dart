@@ -11,19 +11,6 @@ class PlayersService {
 
   static Stream<List<Player>> playersData() {
     return channel.stream.transform(streamTransformer());
-    // _channel.stream.listen(
-    //   (stringData) {
-    //     final Iterable jsonData = json.decode(stringData)['players'];
-
-    //     final players = List<Player>.from(jsonData.map((playerMap) => Player.fromMap(playerMap)));
-    //   },
-    // );
-
-    // return _channel.stream.transform(streamTransformer);
-    // _channel.stream.listen((message) {
-    //   channel.sink.add('received!');
-    //   channel.sink.close(status.goingAway);
-    // });
   }
 
   static StreamTransformer<dynamic, List<Player>> streamTransformer() {

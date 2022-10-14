@@ -1,8 +1,9 @@
-import 'package:csgame/views/blocs/cubit/authentication_cubit.dart';
 import 'package:csgame/views/consts/theme.dart';
-import 'package:csgame/views/screens/authentication_screen.dart';
+import 'package:csgame/views/screens/authentication/authentication_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'views/screens/authentication/cubit/authentication_cubit.dart';
 
 void main() {
   runApp(const MyGame());

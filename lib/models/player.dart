@@ -1,27 +1,30 @@
 import 'dart:convert';
 
+import 'package:csgame/models/position.dart';
+
 class Player {
   final String username;
-  final double x;
-  final double y;
+  final Position position;
 
-  const Player(this.username, this.x, this.y);
+  const Player(this.username, this.position);
 
-  factory Player.start(String username) => Player(username, 0, 0);
+  factory Player.start(String username) => Player(username, Position.initial());
 
   Map<String, dynamic> toMap() {
     return {
       'username': username,
-      'x': x,
-      'y': y,
+      'x': position.x,
+      'y': position.y,
     };
   }
 
   factory Player.fromMap(Map<String, dynamic> map) {
     return Player(
       map['username'] ?? '',
-      map['x']?.toDouble() ?? 0.0,
-      map['y']?.toDouble() ?? 0.0,
+      Position(
+        map['x']?.toDouble() ?? 0.0,
+        map['y']?.toDouble() ?? 0.0,
+      ),
     );
   }
 
@@ -29,15 +32,10 @@ class Player {
 
   factory Player.fromJson(String source) => Player.fromMap(json.decode(source));
 
-  Player copyWith({
-    String? username,
-    double? x,
-    double? y,
-  }) {
+  Player copyWith({String? username, Position? position}) {
     return Player(
       username ?? this.username,
-      x ?? this.x,
-      y ?? this.y,
+      position ?? this.position,
     );
   }
 }
