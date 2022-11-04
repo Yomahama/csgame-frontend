@@ -1,3 +1,4 @@
+import 'package:csgame/models/enums.dart';
 import 'package:csgame/models/player.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   Future<void> signIn(String username) async {
     emit(AuthenticationLoading());
-    await Future.delayed(const Duration(seconds: 2));
-    emit(AuthenticationSuccessful(Player.start(username)));
+    // await Future.delayed(const Duration(seconds: 2));
+    emit(AuthenticationSuccessful(Player.start(username, TeamChoice.none)));
+  }
+
+  void setTeam(TeamChoice teamChoice) {
+    emit(AuthenticationSuccessful(player.copyWith(teamChoice: teamChoice)));
   }
 
   Player get player => (state as AuthenticationSuccessful).player;

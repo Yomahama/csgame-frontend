@@ -58,34 +58,24 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
             SizedBox(
               height: 60,
               width: 200,
-              child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
-                listener: (context, state) {
-                  if (state is AuthenticationSuccessful) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const StartPlayingScreen()),
-                    );
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_usernameController.text.trim().isNotEmpty) {
+                    _authenticationCubit.signIn(_usernameController.text);
                   }
-                },
-                builder: (context, state) {
-                  return ElevatedButton(
-                    onPressed: () {
-                      if (_usernameController.text.trim().isNotEmpty) {
-                        _authenticationCubit.signIn(_usernameController.text);
-                      }
-                    },
-                    child: state is AuthenticationLoading
-                        ? const CircularProgressIndicator()
-                        : const Text(
-                            'LOG ME IN',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const StartPlayingScreen()),
                   );
                 },
+                child: const Text(
+                  'LOG ME IN',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],

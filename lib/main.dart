@@ -22,6 +22,7 @@ class MyGame extends StatelessWidget {
       ],
       child: MaterialApp(
         theme: AppTheme.data,
+        debugShowCheckedModeBanner: false,
         home: const AuthenticationScreen(),
       ),
     );

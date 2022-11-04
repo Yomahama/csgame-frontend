@@ -1,13 +1,18 @@
+import 'package:csgame/design_patterns/factory_method/blue_team_player_sprite.dart';
+import 'package:csgame/design_patterns/factory_method/none_team_player_sprite.dart';
+import 'package:csgame/design_patterns/factory_method/player_sprite.dart';
+import 'package:csgame/design_patterns/factory_method/red_team_player_sprite.dart';
+import 'package:csgame/logic/controllers/game_controller.dart';
+import 'package:csgame/logic/controllers/navigation_intents.dart';
 import 'package:csgame/logic/services/players_service.dart';
 import 'package:csgame/models/player.dart';
 import 'package:csgame/models/position.dart';
 import 'package:csgame/views/screens/authentication/cubit/authentication_cubit.dart';
-import 'package:csgame/views/screens/game/cubits/cursor_cubit/cursor_cubit.dart';
+import 'package:csgame/views/widgets/custom_cursor/cursor_cubit/cursor_cubit.dart';
+import 'package:csgame/views/widgets/custom_cursor/custom_cursor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -17,14 +22,13 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late WebSocketChannel _playerChannel;
-  late Stream<List<Player>> _playersStream;
+  // late WebSocketChannel _playerChannel;
+  // late Stream<List<Player>> _playersStream;
 
   late final AuthenticationCubit _authenticationCubit;
   late final CursorCubit _cursorCubit;
 
-  late double _screenHeight;
-  late double _screenWidth;
+  late GameController _gameController;
 
   @override
   void initState() {
@@ -33,9 +37,12 @@ class _GameScreenState extends State<GameScreen> {
     _authenticationCubit = BlocProvider.of<AuthenticationCubit>(context);
     _cursorCubit = BlocProvider.of<CursorCubit>(context);
 
-    _playerChannel = PlayersService.channel;
+    _gameController = GameController(
+      playersChannel: PlayersService.channel,
+      playersStream: PlayersService.playersData(),
+    );
 
-    _playersStream = PlayersService.playersData();
+    _gameController.initializePlayersServices();
   }
 
   final _goUpKey = LogicalKeySet(LogicalKeyboardKey.arrowUp);
@@ -43,16 +50,24 @@ class _GameScreenState extends State<GameScreen> {
   final _goRightKey = LogicalKeySet(LogicalKeyboardKey.arrowRight);
   final _goLeftKey = LogicalKeySet(LogicalKeyboardKey.arrowLeft);
 
+  final double _playerSize = 30.0;
+  final double _stepSize = 10.0;
+
   double _x = 0;
   double _y = 0;
 
   Position? _mousePositionOnClick;
-  final Position _playerPosition = Position.initial();
+
+  final List<PlayerSprite> _playerSprites = [
+    BlueTeamPlayerSprite(),
+    ReadTeamPlayerSprite(),
+    NoneTeamPlayerStripe(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    _screenHeight = MediaQuery.of(context).size.height;
-    _screenWidth = MediaQuery.of(context).size.width;
+    _gameController.initializeScreenSize(context);
+
     return Listener(
       onPointerDown: _onCursorClicked,
       child: MouseRegion(
@@ -79,6 +94,7 @@ class _GameScreenState extends State<GameScreen> {
                 _buildPlayers(),
                 if (_mousePositionOnClick != null) _builShootDirection(),
                 _buildCursor(),
+                _buildPlayersHealthBar(),
               ],
             ),
           ),
@@ -91,10 +107,7 @@ class _GameScreenState extends State<GameScreen> {
     return CustomPaint(
       size: MediaQuery.of(context).size,
       painter: LineDrawer(
-        Offset(
-          _x + 30,
-          _y + 30,
-        ),
+        Offset(_x + _playerSize / 2, _y + _playerSize / 2),
         Offset(
           _mousePositionOnClick!.x,
           _mousePositionOnClick!.y,
@@ -103,23 +116,11 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  // Positioned(
-  //   top: 0,
-  //   right: 200,
-  //   child: Container(
-  //     color: Colors.deepPurple,
-  //     width: 20,
-  //     height: 100,
-  //   ),
-  // ),
-  //random object
-
   Widget _buildCursor() {
     return BlocBuilder<CursorCubit, CursorState>(
       builder: (context, state) {
-        print('build');
         return Positioned(
-          top: state.position.y - 12,
+          top: state.position.y - 12, // -12 so that offset would be in the center
           left: state.position.x - 12,
           child: const CustomCursor(),
         );
@@ -138,29 +139,36 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildPlayers() {
     return StreamBuilder<List<Player>>(
-      stream: _playersStream,
+      stream: _gameController.playersStream,
       initialData: const [],
       builder: (_, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.hasData) {
             final players = snapshot.data!;
 
+            int myIndex = players.indexWhere(
+              (p) => p.username == _authenticationCubit.player.username,
+            );
+
+            players[myIndex] = players[myIndex].copyWith(
+              teamChoice: _authenticationCubit.player.teamChoice,
+            );
+
             return Stack(
               children: [
-                for (int i = 0; i < players.length; i++)
-                  _buildPlayerSprite(
-                    players[i].position,
-                    i == 0 ? Colors.red : Colors.blue,
-                  ),
+                for (int i = 0; i < players.length; i++) _buildPlayerSprite(players[i]),
               ],
             );
           }
-
-          return const Center(child: Text('No data'));
         }
 
-        if (snapshot.hasError) {
-          print(snapshot.error);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Text(
+              '-> PRESS ANY ARROW KEY TO START <-',
+              style: TextStyle(fontSize: 24),
+            ),
+          );
         }
 
         return Center(child: Text(snapshot.connectionState.name));
@@ -168,27 +176,43 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildPlayerSprite(Position position, Color color) {
+  //Strategy, Builder, Prototype //abstract factory //command //adapter
+
+  Widget _buildPlayerSprite(Player player) {
     return Positioned(
-      top: position.y,
-      left: position.x,
-      child: SvgPicture.asset(
-        'assets/images/character.svg',
-        height: 60,
-        width: 60,
+      top: player.position.y,
+      left: player.position.x,
+      child: _playerSprites[player.teamChoice.index].show(player),
+    );
+  }
+
+  Widget _buildPlayersHealthBar() {
+    return Positioned.fill(
+      child: Container(
+        padding: const EdgeInsets.all(30),
+        alignment: Alignment.topCenter,
+        child: Row(
+          children: [
+            for (int i = 0; i < 10; i++) const Icon(Icons.favorite_border_rounded),
+            const Spacer(),
+            for (int i = 0; i < 10; i++) const Icon(Icons.favorite_border_rounded),
+          ],
+        ),
       ),
     );
   }
 
   bool _canGoWidth(double currentPos) {
-    return 0 < currentPos - 10 + 20 && currentPos - 10 + 20 < _screenWidth;
+    return 0 < currentPos - _stepSize + _playerSize / 2 &&
+        currentPos - _stepSize + _playerSize / 2 < _gameController.screenWidth;
   }
 
   bool _canGoHeight(double currentPos) {
-    return 0 < currentPos - 10 + 20 && currentPos - 10 + 20 < _screenHeight;
+    return 0 < currentPos - _stepSize + _playerSize / 2 &&
+        currentPos - _stepSize + _playerSize / 2 < _gameController.screenHeight;
   }
 
-  void _notifyThatNotAvailable() {
+  void _notifyThatReachedBounds() {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('You have reach the bounds of the map'),
@@ -197,48 +221,48 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Intent _goUp(Intent intent) {
-    if (_canGoHeight(_y - 10)) {
-      _y = _y - 10;
+    if (_canGoHeight(_y - _stepSize)) {
+      _y = _y - _stepSize;
 
-      _playerChannel.sink
+      _gameController.playersChannel.sink
           .add(_authenticationCubit.player.copyWith(position: Position(_x, _y)).toJson());
     } else {
-      _notifyThatNotAvailable();
+      _notifyThatReachedBounds();
     }
 
     return intent;
   }
 
   Intent _goDown(Intent intent) {
-    if (_canGoHeight(_y + 10)) {
-      _y = _y + 10;
-      _playerChannel.sink
+    if (_canGoHeight(_y + _stepSize)) {
+      _y = _y + _stepSize;
+      _gameController.playersChannel.sink
           .add(_authenticationCubit.player.copyWith(position: Position(_x, _y)).toJson());
     } else {
-      _notifyThatNotAvailable();
+      _notifyThatReachedBounds();
     }
 
     return intent;
   }
 
   Intent _goRight(Intent intent) {
-    if (_canGoWidth(_x + 10)) {
-      _x = _x + 10;
-      _playerChannel.sink
+    if (_canGoWidth(_x + _stepSize)) {
+      _x = _x + _stepSize;
+      _gameController.playersChannel.sink
           .add(_authenticationCubit.player.copyWith(position: Position(_x, _y)).toJson());
     } else {
-      _notifyThatNotAvailable();
+      _notifyThatReachedBounds();
     }
     return intent;
   }
 
   Intent _goLeft(Intent intent) {
-    if (_canGoWidth(_x - 10)) {
-      _x = _x - 10;
-      _playerChannel.sink
+    if (_canGoWidth(_x - _stepSize)) {
+      _x = _x - _stepSize;
+      _gameController.playersChannel.sink
           .add(_authenticationCubit.player.copyWith(position: Position(_x, _y)).toJson());
     } else {
-      _notifyThatNotAvailable();
+      _notifyThatReachedBounds();
     }
     return intent;
   }
@@ -250,14 +274,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 }
-
-class GoUpIntent extends Intent {}
-
-class GoDownIntent extends Intent {}
-
-class GoLeftIntent extends Intent {}
-
-class GoRightIntent extends Intent {}
 
 class LineDrawer extends CustomPainter {
   final Offset start;
@@ -278,42 +294,5 @@ class LineDrawer extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
-  }
-}
-
-class CustomCursor extends StatefulWidget {
-  const CustomCursor({super.key});
-
-  @override
-  State<CustomCursor> createState() => _CustomCursorState();
-}
-
-class _CustomCursorState extends State<CustomCursor> {
-  @override
-  Widget build(BuildContext context) {
-    print('cursor');
-    return Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey, width: 2),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            height: 24,
-            width: 2,
-            color: Colors.grey,
-          ),
-          Container(
-            height: 2,
-            width: 24,
-            color: Colors.grey,
-          ),
-        ],
-      ),
-    );
   }
 }
