@@ -60,7 +60,7 @@ class _GameScreenState extends State<GameScreen> {
 
   final List<PlayerSprite> _playerSprites = [
     BlueTeamPlayerSprite(),
-    ReadTeamPlayerSprite(),
+    RedTeamPlayerSprite(),
     NoneTeamPlayerStripe(),
   ];
 

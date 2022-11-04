@@ -3,7 +3,7 @@ import 'package:csgame/models/player.dart';
 import 'package:csgame/views/consts/global_consts.dart';
 import 'package:flutter/material.dart';
 
-class ReadTeamPlayerSprite extends PlayerSprite {
+class RedTeamPlayerSprite extends PlayerSprite {
   @override
   Widget create(Player player) {
     return Stack(
