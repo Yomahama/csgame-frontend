@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:csgame/models/entity_base.dart';
 import 'package:csgame/models/enums.dart';
 import 'package:csgame/models/position.dart';
+import 'package:equatable/equatable.dart';
 
-class Player {
+class Player extends Equatable with EntityBase {
   final String username;
   final TeamChoice teamChoice;
   final Position position;
@@ -50,4 +52,7 @@ class Player {
       position ?? this.position,
     );
   }
+
+  @override
+  List<Object?> get props => [username, teamChoice, position];
 }

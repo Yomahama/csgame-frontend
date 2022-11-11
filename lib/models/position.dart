@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 
 class Position extends Equatable {
@@ -20,4 +22,14 @@ class Position extends Equatable {
       y ?? this.y,
     );
   }
+
+  factory Position.fromMap(Map<String, dynamic> map) {
+    return Position(
+      map['target_x']?.toDouble() ?? 0.0,
+      map['target_y']?.toDouble() ?? 0.0,
+    );
+  }
+
+
+  factory Position.fromJson(String source) => Position.fromMap(json.decode(source));
 }
